@@ -3,6 +3,87 @@ import numpy as np
 import cv2
 from pyzbar import pyzbar
 from PIL import Image
+from itertools import chain, combinations
+
+class UniqueColorIterator:
+    ''' Iterates over all unique colors in an image, after dividing RGB values by an input divisor. '''
+    def __init__(self, image: np.ndarray, color_divisor: int, threshold_pixel_average: int = 250):
+        self._image = image
+        self._color_divisor = color_divisor
+        self._threshold_pixel_average = threshold_pixel_average
+
+    def __filter_colors(self, image: np.array, colors: np.array): 
+        remaining_colors = []
+        for color in colors:
+            # threshold on the specified color
+            lower=np.array((color))
+            upper=np.array((color))
+            mask = cv2.inRange(image, lower, upper)
+
+            single_color = image.copy()
+            # change all non-specified color to white
+            single_color[mask!=255] = (255, 255, 255)
+
+            pixel_average = np.average(single_color)
+            if pixel_average < self._threshold_pixel_average:
+                remaining_colors.append(color)
+
+        return remaining_colors
+
+    def __iter__(self):
+        # Do simple color reduction
+        image_copy = self._image.copy()
+        image_copy = self._color_divisor * ( image_copy // self._color_divisor ) + self._color_divisor // 2
+
+        # Get list of unique colors
+        list_bgr_colors = np.unique(image_copy.reshape(-1, image_copy.shape[2]), axis=0)
+
+        # Filter the list of unique colors, removing those colors with relatively few non-white pixels
+        self._unique_colors = self.__filter_colors(image_copy, list_bgr_colors)
+        self._i = 0
+
+        return self
+    
+    def __next__(self):
+        if self._i < len(self._unique_colors):
+            color = self._unique_colors[self._i]
+            self._i += 1
+            return color
+        else:
+            raise StopIteration
+
+class ColorSetIterator:
+    ''' Iterates over all possible combinations of unique colors in an image, after dividing RGB values by an input divisor. '''
+    def __init__(self, image: np.ndarray, color_divisor: int, threshold_pixel_average: int = 250):
+        self._image = image
+        self._color_divisor = color_divisor
+        self._threshold_pixel_average = threshold_pixel_average
+
+    def __powerset(self, iterable):
+        s = list(iterable)
+        return chain.from_iterable(combinations(s, r) for r in range(len(s)+1))
+
+    def __iter__(self):
+        # Do simple color reduction
+        image_copy = self._image.copy()
+        image_copy = self._color_divisor * ( image_copy // self._color_divisor ) + self._color_divisor // 2
+
+        # Materialize the list of unique colors
+        unique_colors = [ color for color in UniqueColorIterator(image_copy, self._color_divisor, self._threshold_pixel_average) ]
+        
+        # Construct the powerlist, skipping the empty set
+        self._color_sets = [ s for s in self.__powerset(unique_colors) if len(s) > 0 ]
+        self._i = 0
+
+        return self
+    
+    def __next__(self):
+        if self._i < len(self._color_sets):
+            color_set = self._color_sets[self._i]
+            self._i += 1
+            return color_set
+        else:
+            raise StopIteration
 
 class BarcodeReader():
     '''
@@ -94,6 +175,9 @@ class BarcodeReader():
         cropped_image = image[c:d, a:b]
         barcode = self.read_rgb_array(cropped_image)
         return barcode, cropped_image
+    
+    def identify_color_sets(self, image: np.ndarray, color_divisor: int = 32, threshold_pixel_average: int = 250) -> list[np.ndarray]:
+        return [ color_set for color_set in ColorSetIterator(image, color_divisor, threshold_pixel_average) ]
     
     def reduce_colors(self, image: np.ndarray, color_set: np.ndarray) -> np.ndarray:
         transformed_image = None     
