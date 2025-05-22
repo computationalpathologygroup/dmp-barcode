@@ -68,11 +68,8 @@ class ColorSetIterator:
         return chain.from_iterable(combinations(s, r) for r in range(len(s)+1))
 
     def __iter__(self):
-        # Do simple color reduction
-        image_copy = reduce_color(self._image, self._color_divisor)
-
         # Materialize the list of unique colors
-        unique_colors = [ color for color in UniqueColorIterator(image_copy, self._color_divisor, self._threshold_pixel_average) ]
+        unique_colors = [ color for color in UniqueColorIterator(self._image, self._color_divisor, self._threshold_pixel_average) ]
         
         # Construct the powerlist, skipping the empty set
         self._color_sets = [ s for s in self.__powerset(unique_colors) if len(s) > 0 ]
