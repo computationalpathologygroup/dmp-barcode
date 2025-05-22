@@ -5,6 +5,11 @@ from pyzbar import pyzbar
 from PIL import Image
 from itertools import chain, combinations
 
+def reduce_color(image: np.ndarray, color_divisor: int) -> np.ndarray:
+    image_copy = image.copy()
+    image_copy = color_divisor * ( image_copy // color_divisor ) + color_divisor // 2
+    return image_copy
+
 class UniqueColorIterator:
     ''' Iterates over all unique colors in an image, after dividing RGB values by an input divisor. '''
     def __init__(self, image: np.ndarray, color_divisor: int, threshold_pixel_average: int = 250):
@@ -32,8 +37,7 @@ class UniqueColorIterator:
 
     def __iter__(self):
         # Do simple color reduction
-        image_copy = self._image.copy()
-        image_copy = self._color_divisor * ( image_copy // self._color_divisor ) + self._color_divisor // 2
+        image_copy = reduce_color(self._image, self._color_divisor)
 
         # Get list of unique colors
         list_bgr_colors = np.unique(image_copy.reshape(-1, image_copy.shape[2]), axis=0)
@@ -65,8 +69,7 @@ class ColorSetIterator:
 
     def __iter__(self):
         # Do simple color reduction
-        image_copy = self._image.copy()
-        image_copy = self._color_divisor * ( image_copy // self._color_divisor ) + self._color_divisor // 2
+        image_copy = reduce_color(self._image, self._color_divisor)
 
         # Materialize the list of unique colors
         unique_colors = [ color for color in UniqueColorIterator(image_copy, self._color_divisor, self._threshold_pixel_average) ]
@@ -179,7 +182,10 @@ class BarcodeReader():
     def identify_color_sets(self, image: np.ndarray, color_divisor: int = 32, threshold_pixel_average: int = 250) -> list[np.ndarray]:
         return [ color_set for color_set in ColorSetIterator(image, color_divisor, threshold_pixel_average) ]
     
-    def reduce_colors(self, image: np.ndarray, color_set: np.ndarray) -> np.ndarray:
+    def reduce_colors(self, image: np.ndarray, color_divisor: int, color_set: np.ndarray) -> np.ndarray:
+        # Apply color divisor
+        reduced_image = reduce_color(image, color_divisor)
+
         transformed_image = None     
 
         for color in color_set:
@@ -188,7 +194,7 @@ class BarcodeReader():
             upper=np.array((color))
             mask = cv2.inRange(image, lower, upper)
 
-            single_color = image.copy() 
+            single_color = reduced_image.copy() 
             # change all non-specified color to white
             single_color[mask!=255] = (255, 255, 255)
 
