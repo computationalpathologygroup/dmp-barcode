@@ -189,7 +189,7 @@ class BarcodeReader():
             # threshold on the specified color
             lower=np.array((color))
             upper=np.array((color))
-            mask = cv2.inRange(image, lower, upper)
+            mask = cv2.inRange(reduced_image, lower, upper)
 
             single_color = reduced_image.copy() 
             # change all non-specified color to white
