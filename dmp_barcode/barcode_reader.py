@@ -176,6 +176,9 @@ class BarcodeReader():
         barcode = self.read_rgb_array(cropped_image)
         return barcode, cropped_image
     
+    def identify_colors(self, image: np.ndarray, color_divisor: int = 32, threshold_pixel_average: int = 250) -> list[np.ndarray]:
+        return [ color for color in UniqueColorIterator(image, color_divisor, threshold_pixel_average) ]
+    
     def identify_color_sets(self, image: np.ndarray, color_divisor: int = 32, threshold_pixel_average: int = 250) -> list[np.ndarray]:
         return [ color_set for color_set in ColorSetIterator(image, color_divisor, threshold_pixel_average) ]
     
