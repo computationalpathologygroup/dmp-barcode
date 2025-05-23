@@ -182,7 +182,7 @@ class BarcodeReader():
     def identify_color_sets(self, image: np.ndarray, color_divisor: int = 32, threshold_pixel_average: int = 250) -> list[np.ndarray]:
         return [ color_set for color_set in ColorSetIterator(image, color_divisor, threshold_pixel_average) ]
     
-    def reduce_colors(self, image: np.ndarray, color_divisor: int, color_set: np.ndarray) -> np.ndarray:
+    def reduce_and_read(self, image: np.ndarray, color_divisor: int, color_set: np.ndarray) -> tuple[str, np.ndarray]:
         # Apply color divisor
         reduced_image = reduce_color(image, color_divisor)
 
@@ -203,4 +203,5 @@ class BarcodeReader():
             else:
                 transformed_image = transformed_image + single_color
 
-        return transformed_image
+        barcode = self.read_rgb_array(transformed_image)
+        return barcode, transformed_image
