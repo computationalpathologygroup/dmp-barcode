@@ -110,22 +110,22 @@ class BarcodeReader():
     
         return None
 
-    def read_image(self, image: Image) -> str:
+    def read_image(self, image: Image, validate: bool = True) -> str:
         # First attempt to read the barcode using zxing
         zxing_barcodes = zxingcpp.read_barcodes(image)
         if len(zxing_barcodes) > 0:
             barcode = zxing_barcodes[0].text
-
-            if self.__is_valid_barcode(barcode):
-                return zxing_barcodes[0].text
-
+    
+            if not validate or self.__is_valid_barcode(barcode):
+                return barcode
+    
         # Second attempt to read the barcode using pyzbar
         pyzbar_barcodes = pyzbar.decode(image)
         if len(pyzbar_barcodes) > 0:
             barcode = pyzbar_barcodes[0].data.decode('utf-8')
-
-            if self.__is_valid_barcode(barcode):
-                return pyzbar_barcodes[0].data.decode('utf-8')
+    
+            if not validate or self.__is_valid_barcode(barcode):
+                return barcode
             
         return None
     
