@@ -130,7 +130,7 @@ class BarcodeReader():
         return None
     
     def read_rgb_array(self, image: np.ndarray) -> str:
-        return self.read_image(self.rgb_array_to_image(image))
+        return self.read_image(self.rgb_array_to_image(image), False)
         
     def image_to_rgb_array(self, image: Image) -> np.ndarray:
         '''
