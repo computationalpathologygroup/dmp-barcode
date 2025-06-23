@@ -93,8 +93,11 @@ class BarcodeReader():
         barcode_parts = barcode.split('-')
         n = len(barcode_parts)
         if n == 1:
-            int_barcode = int(barcode_parts[0])
-            return int(1E6) <= int_barcode and int_barcode < int(1E7)
+            try:
+                int_barcode = int(barcode_parts[0])
+                return int(1E6) <= int_barcode and int_barcode < int(1E7)
+            except ValueError:
+                return False
         elif n == 3:
             int_lms = int(barcode_parts[1])
             int_barcode = int(barcode_parts[2])
