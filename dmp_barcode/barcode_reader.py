@@ -97,11 +97,14 @@ class BarcodeReader():
                 int_barcode = int(barcode_parts[0])
                 return int(1E6) <= int_barcode and int_barcode < int(1E7)
             except ValueError:
-                return False
+                pass
         elif n == 3:
-            int_lms = int(barcode_parts[1])
-            int_barcode = int(barcode_parts[2])
-            return barcode_parts[0] == 'LMS' and 1 <= int_lms and int_lms <= 9 and int(1E6) <= int_barcode and int_barcode < int(1E7)
+            try:
+                int_lms = int(barcode_parts[1])
+                int_barcode = int(barcode_parts[2])
+                return barcode_parts[0] == 'LMS' and 1 <= int_lms and int_lms <= 9 and int(1E6) <= int_barcode and int_barcode < int(1E7)
+            except ValueError:
+                pass
         return False
     
     def read_file_path(self, file_path: str) -> str:
