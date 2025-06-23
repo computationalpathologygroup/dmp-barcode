@@ -93,12 +93,14 @@ class BarcodeReader():
         barcode_parts = barcode.split('-')
         n = len(barcode_parts)
         if n == 1:
+            # Wrap integer conversion in try-except to handle non-integer barcodes
             try:
                 int_barcode = int(barcode_parts[0])
                 return int(1E6) <= int_barcode and int_barcode < int(1E7)
             except ValueError:
                 pass
         elif n == 3:
+            # Wrap integer conversion in try-except to handle non-integer barcodes
             try:
                 int_lms = int(barcode_parts[1])
                 int_barcode = int(barcode_parts[2])
