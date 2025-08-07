@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='dmp_barcode',
-    version='0.1.0',    
+    version='0.1.1',    
     description='Package encapsulating barcode reading- and transformation logic.',
     url='https://github.com/computationalpathologygroup/dmp-barcode',
     author='Thomas Mulder',

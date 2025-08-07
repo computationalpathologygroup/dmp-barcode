@@ -89,7 +89,19 @@ class BarcodeReader():
     '''
     Encapsulates the barcode reading functionality.
     '''
+
+    def __init__(self, skip_barcode_validation: bool = False):
+        '''
+        Initializes the BarcodeReader.
+        
+        :param skip_barcode_validation: If True, skips validation of barcodes.
+        '''
+        self.skip_barcode_validation = skip_barcode_validation
+
     def __is_valid_barcode(self, barcode: str) -> bool:
+        if self.skip_barcode_validation:
+            return True
+        
         barcode_parts = barcode.split('-')
         n = len(barcode_parts)
         if n == 1:
