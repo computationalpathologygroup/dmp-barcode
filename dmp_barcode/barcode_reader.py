@@ -1,6 +1,7 @@
 import zxingcpp
 import numpy as np
 import cv2
+import os
 from pyzbar import pyzbar
 from PIL import Image
 from itertools import chain, combinations
@@ -121,7 +122,9 @@ class BarcodeReader():
     
     def read_file_path(self, file_path: str) -> str:
         # Check for barcode in file name
-        file_path_parts = file_path.split(' ')
+        # Strip the file extension if present
+        file_path_without_ext = os.path.splitext(file_path)[0]
+        file_path_parts = file_path_without_ext.split(' ')
         barcode = file_path_parts[-1]
         if barcode is not None and self.__is_valid_barcode(barcode):
             return barcode
