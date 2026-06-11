@@ -138,35 +138,25 @@ class BarcodeReader():
         file_path_slidedat = os.path.join(file_path_without_ext, 'Slidedat.ini')
         
         try:
-            print(f'[DEBUG][read_slidedat] Attempting to read file {file_path_slidedat}', flush=True)
             with open(file_path_slidedat, 'r') as file:
-                print(f'[DEBUG][read_slidedat] Reading lines...', flush=True)
                 for line in file.readlines():
                     # Attempt 1: identify the barcode from the original file name
-                    print(f'[DEBUG][read_slidedat] Attempt 1...', flush=True)
                     if 'SLIDE_NAME =' in line:
                         line_parts = line.split('=')
                         if len(line_parts) != 2:
-                            print(f'[DEBUG][read_slidedat] Fewer or more than two line parts found', flush=True)
                             continue
                         line_value = line_parts[1].strip()
-                        print(f'[DEBUG][read_slidedat] line_value={line_value}', flush=True)
                         line_value_parts = line_value.split(' ')
-                        print(f'[DEBUG][read_slidedat] line_value_parts={line_value_parts}', flush=True)
                         barcode = line_value_parts[-1]
-                        print(f'[DEBUG][read_slidedat] barcode={barcode}', flush=True)
                         if barcode is not None and self.__is_valid_barcode(barcode):
                             return barcode
                         
                     # Attempt 2: identify the barcode from the barcode value
-                    print(f'[DEBUG][read_slidedat] Attempt 2...', flush=True)
                     if 'BARCODE_VALUE =' in line:
                         line_parts = line.split('=')
                         if len(line_parts) != 2:
-                            print(f'[DEBUG][read_slidedat] Fewer or more than two line parts found', flush=True)
                             continue
                         barcode = line_parts[1].strip()
-                        print(f'[DEBUG][read_slidedat] barcode={barcode}', flush=True)
                         if barcode is not None and self.__is_valid_barcode(barcode):
                             return barcode
         except (FileNotFoundError, PermissionError, IOError, OSError) as e:
