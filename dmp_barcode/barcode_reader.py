@@ -131,6 +131,40 @@ class BarcodeReader():
     
         return None
 
+    def read_slidedat(self, file_path: str) -> str:
+        # Check for barcode in Slidedat.ini associated with the MRXS file defined in file_path
+        # Construct the path to the Slidedat.ini file from the given file_path
+        file_path_without_ext = os.path.splitext(file_path)[0]
+        file_path_slidedat = os.path.join(file_path_without_ext, 'Slidedat.ini')
+        
+        try:
+            with open(file_path_slidedat, 'r') as file:
+                for line in file.readlines():
+                    # Attempt 1: identify the barcode from the original file name
+                    if 'SLIDE_NAME =' in line:
+                        line_parts = line.split('=')
+                        if len(line_parts) != 2:
+                            continue
+                        line_value = line_parts[1].strip()
+                        line_value_parts = line_value.split(' ')
+                        barcode = line_value_parts[-1]
+                        if barcode is not None and self.__is_valid_barcode(barcode):
+                            return barcode
+                        
+                    # Attempt 2: identify the barcode from the barcode value
+                    if 'BARCODE_VALUE =' in line:
+                        line_parts = line.split('=')
+                        if len(line_parts) != 2:
+                            continue
+                        barcode = line_parts[1].strip()
+                        if barcode is not None and self.__is_valid_barcode(barcode):
+                            return barcode
+        except (FileNotFoundError, PermissionError, IOError, OSError) as e:
+            # Return None if file cannot be read
+            return None
+    
+        return None
+
     def read_image(self, image: Image, validate: bool = True) -> str:
         # First attempt to read the barcode using zxing
         zxing_barcodes = zxingcpp.read_barcodes(image)
